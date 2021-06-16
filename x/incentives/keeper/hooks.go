@@ -19,10 +19,14 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, epochNumb
 			}
 		}
 
-		// distribute due to epoch event
+		_, err := k.DistributeAllGauges(ctx)
+		if err != nil {
+			panic(err)
+		}
+
+		// Finish distribution
 		gauges = k.GetActiveGauges(ctx)
 		for _, gauge := range gauges {
-			k.Distribute(ctx, gauge)
 			// filled epoch is increased in this step and we compare with +1
 			if !gauge.IsPerpetual && gauge.NumEpochsPaidOver <= gauge.FilledEpochs+1 {
 				k.FinishDistribution(ctx, gauge)

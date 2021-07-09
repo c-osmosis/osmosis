@@ -1,12 +1,13 @@
 package keeper_test
 
 import (
-	"fmt"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/osmosis-labs/osmosis/x/lockup/types"
 )
+
 
 func (suite *KeeperTestSuite) TestBeginUnlocking() { // test for all unlockable coins
 	suite.SetupTest()
@@ -248,13 +249,14 @@ func (suite *KeeperTestSuite) TestLockTokensAlot() {
 	for i := 0; i < skipLogsFor; i++ {
 		suite.LockTokens(addr1, coins, time.Second)
 	}
+
+	// alreadySpent := suite.ctx.GasMeter
 	for i := 0; i < 1000; i++ {
-		alreadySpent := suite.ctx.GasMeter().GasConsumed()
+		// alreadySpent := suite.ctx.GasMeter().GasConsumed()
 		suite.LockTokens(addr1, coins, time.Second)
-		newSpent := suite.ctx.GasMeter().GasConsumed()
-		spentNow := newSpent - alreadySpent
-		fmt.Println("sum up - consumed gas", i+skipLogsFor, spentNow)
 	}
+
+	// fmt.Println("average gas comsumption: ", (suite.ctx.GasMeter().GasConsumed()-alreadySpent)/100)
 	// panic(1)
 }
 

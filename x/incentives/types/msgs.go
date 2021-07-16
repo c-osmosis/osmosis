@@ -10,8 +10,9 @@ import (
 
 // constants
 const (
-	TypeMsgCreateGauge = "create_gauge"
-	TypeMsgAddToGauge  = "add_to_gauge"
+	TypeMsgCreateGauge    = "create_gauge"
+	TypeMsgAddToGauge     = "add_to_gauge"
+	TypeMsgSetAutoStaking = "set_autostaking"
 )
 
 var _ sdk.Msg = &MsgCreateGauge{}
@@ -92,5 +93,52 @@ func (m MsgAddToGauge) GetSignBytes() []byte {
 }
 func (m MsgAddToGauge) GetSigners() []sdk.AccAddress {
 	owner, _ := sdk.AccAddressFromBech32(m.Owner)
+	return []sdk.AccAddress{owner}
+}
+
+var _ sdk.Msg = &MsgSetAutoStaking{}
+
+// NewMsgCreateGauge creates a message to create a gauge
+func NewMsgSetAutoStaking(address, autostakingValidator string) *MsgSetAutoStaking {
+	return &MsgSetAutoStaking{
+		Address:              address,
+		AutostakingValidator: autostakingValidator,
+		// AutostakingRate:      rate,
+	}
+}
+
+func (m MsgSetAutoStaking) Route() string { return RouterKey }
+func (m MsgSetAutoStaking) Type() string  { return TypeMsgSetAutoStaking }
+func (m MsgSetAutoStaking) ValidateBasic() error {
+	if m.Address == "" {
+		return errors.New("address should be set")
+	}
+	_, err := sdk.AccAddressFromBech32(m.Address)
+	if err != nil {
+		return err
+	}
+
+	if m.AutostakingValidator == "" {
+		return errors.New("autostaking validator should be set")
+	}
+	_, err = sdk.ValAddressFromBech32(m.AutostakingValidator)
+	if err != nil {
+		return err
+	}
+
+	// if m.AutostakingRate.IsNegative() {
+	// 	return errors.New("auto-staking rate can not be negative")
+	// }
+	// if m.AutostakingRate.GT(sdk.OneDec()) {
+	// 	return errors.New("auto-staking rate can not exceed 100%")
+	// }
+
+	return nil
+}
+func (m MsgSetAutoStaking) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+func (m MsgSetAutoStaking) GetSigners() []sdk.AccAddress {
+	owner, _ := sdk.AccAddressFromBech32(m.Address)
 	return []sdk.AccAddress{owner}
 }
